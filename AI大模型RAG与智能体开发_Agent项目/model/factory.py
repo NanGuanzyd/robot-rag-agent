@@ -1,3 +1,4 @@
+import os
 from abc import ABC, abstractmethod
 from typing import Optional
 from langchain_core.embeddings import Embeddings
@@ -23,5 +24,20 @@ class EmbeddingsFactory(BaseModelFactory):
         return DashScopeEmbeddings(model=rag_conf["embedding_model_name"])
 
 
-chat_model = ChatModelFactory().generator()
-embed_model = EmbeddingsFactory().generator()
+# 懒加载：延迟到第一次使用时才初始化，避免 import 时环境变量未就绪
+_chat_model = None
+_embed_model = None
+
+
+def get_chat_model():
+    global _chat_model
+    if _chat_model is None:
+        _chat_model = ChatModelFactory().generator()
+    return _chat_model
+
+
+def get_embed_model():
+    global _embed_model
+    if _embed_model is None:
+        _embed_model = EmbeddingsFactory().generator()
+    return _embed_model
